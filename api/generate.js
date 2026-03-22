@@ -9,7 +9,9 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { title, prompt } = req.body;
+        const body = req.body || {};
+        const title = body.title || "Bài Bolero";
+        const prompt = body.prompt || "tình yêu buồn, chia ly";
 
         // 👉 Gọi OpenAI tạo lời
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
