@@ -6,18 +6,22 @@ export default async function handler(req, res) {
     const prompt = body.prompt || "tình yêu buồn";
 
     try {
-        // 🔥 Gọi HuggingFace FREE
         const response = await fetch(
-            "https://api-inference.huggingface.co/models/bigscience/bloom",
+            "https://router.huggingface.co/hf-inference/models/bigscience/bloom",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    inputs: `Viết bài hát Bolero hoàn chỉnh, có verse và điệp khúc.
+                    inputs: `
+Viết bài hát Bolero hoàn chỉnh.
+
 Tiêu đề: ${title}
-Nội dung: ${prompt}`
+Nội dung: ${prompt}
+
+Có Verse, Chorus rõ ràng, cảm xúc buồn.
+`
                 })
             }
         );
@@ -26,13 +30,12 @@ Nội dung: ${prompt}`
 
         let lyrics = "";
 
-        // 👉 Xử lý nhiều dạng trả về (QUAN TRỌNG)
         if (Array.isArray(data) && data[0]?.generated_text) {
             lyrics = data[0].generated_text;
         } else if (data?.error) {
             lyrics = "❌ Lỗi AI FREE: " + data.error;
         } else {
-            lyrics = "❌ Không tạo được lời (AI bận hoặc quá tải)";
+            lyrics = "❌ AI đang bận, thử lại sau";
         }
 
         return res.status(200).json({
