@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    // Cho phép gọi từ web GitHub
+    // CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -11,9 +11,17 @@ export default async function handler(req, res) {
     try {
         const body = req.body || {};
         const title = body.title || "Bài Bolero";
-        const prompt = body.prompt || "tình yêu buồn, chia ly";
+        const prompt = body.prompt || "tình yêu buồn";
 
-        // 👉 Gọi OpenAI tạo lời
+        // 👉 Kiểm tra API KEY
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(200).json({
+                lyrics: "❌ Chưa cấu hình API KEY trên Vercel",
+                audioUrl: ""
+            });
+        }
+
+        // 👉 Gọi OpenAI
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -25,41 +33,7 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: "user",
-                        content: `
-Hãy sáng tác một bài hát Bolero Việt Nam hoàn chỉnh.
-
-Yêu cầu:
-- Tiêu đề: ${title}
-- Nội dung: ${prompt}
-- Phong cách: Bolero trữ tình, giống nhạc vàng xưa như: Chế Linh, Mạnh Quỳnh, Trường Vũ, Ngọc Sơn,..
-- Giọng nam, cảm xúc sâu lắng, truyền cảm,...
-
-Cấu trúc bắt buộc:
-[Verse 1]
-(4 câu)
-
-[Verse 2]
-(4 câu)
-
-[Chorus]
-(4-6 câu, cao trào, dễ nhớ)
-
-[Verse 3]
-(4 câu)
-
-[Bridge]
-(2-4 câu)
-
-[Chorus - lặp lại mạnh hơn]
-
-[Kết]
-(2 câu, kết buồn hoặc dang dở)
-
-Yêu cầu thêm:
-- Lời phải mượt, có vần
-- Có hình ảnh: mưa, kỷ niệm, chia ly
-- Không viết giải thích, chỉ viết lời bài hát`
-- Điệp khúc phải dễ thuộc, dễ lan truyền`
+                        content: `Viết bài Bolero hoàn chỉnh. Tiêu đề: ${title}. Nội dung: ${prompt}`
                     }
                 ]
             })
@@ -67,22 +41,27 @@ Yêu cầu thêm:
 
         const data = await response.json();
 
+        // 👉 Nếu OpenAI lỗi
+        if (data.error) {
+            return res.status(200).json({
+                lyrics: "❌ Lỗi OpenAI: " + data.error.message,
+                audioUrl: ""
+            });
+        }
+
         const lyrics =
             data?.choices?.[0]?.message?.content ||
-            "Lỗi tạo lời, kiểm tra API key";
-
-        // 🎵 Nhạc demo (sẽ nâng cấp sau)
-        const audioUrl =
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+            "Không tạo được lời";
 
         return res.status(200).json({
             lyrics,
-            audioUrl
+            audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         });
 
     } catch (error) {
-        return res.status(500).json({
-            error: error.toString()
+        return res.status(200).json({
+            lyrics: "❌ Server crash: " + error.toString(),
+            audioUrl: ""
         });
     }
 }
