@@ -6,32 +6,34 @@ export default async function handler(req, res) {
     const prompt = body.prompt || "tình yêu buồn";
 
     try {
-        // 🎵 AI FREE (giả lập thông minh)
-        const lyrics = `
-🎵 ${title}
+        // 🔥 Gọi HuggingFace FREE
+        const response = await fetch(
+            "https://api-inference.huggingface.co/models/bigscience/bloom",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    inputs: `Viết bài hát Bolero hoàn chỉnh, có verse và điệp khúc.
+Tiêu đề: ${title}
+Nội dung: ${prompt}`
+                })
+            }
+        );
 
-[Verse 1]
-Chiều mưa rơi ướt lối em về
-Anh đứng đó nghe lòng tái tê
-Tình xưa như gió bay xa
-Còn đâu những tháng ngày qua...
+        const data = await response.json();
 
-[Verse 2]
-Con đường cũ vẫn còn in dấu
-Mà giờ đây chỉ mình anh đau
-Kỷ niệm xưa đã phai màu
-Chỉ còn nỗi nhớ nghẹn ngào...
+        let lyrics = "";
 
-💔 [Chorus]
-Em ơi sao nỡ quên câu thề
-Để anh ôm trọn nỗi ê chề
-Tình yêu như giấc mộng mê
-Tan rồi chỉ còn u mê...
-
-[Kết]
-Mưa rơi lạnh ướt vai gầy
-Mất em anh biết về đâu...
-        `;
+        // 👉 Xử lý nhiều dạng trả về (QUAN TRỌNG)
+        if (Array.isArray(data) && data[0]?.generated_text) {
+            lyrics = data[0].generated_text;
+        } else if (data?.error) {
+            lyrics = "❌ Lỗi AI FREE: " + data.error;
+        } else {
+            lyrics = "❌ Không tạo được lời (AI bận hoặc quá tải)";
+        }
 
         return res.status(200).json({
             lyrics,
@@ -40,7 +42,7 @@ Mất em anh biết về đâu...
 
     } catch (error) {
         return res.status(200).json({
-            lyrics: "Lỗi AI FREE",
+            lyrics: "❌ Server lỗi: " + error.toString(),
             audioUrl: ""
         });
     }
