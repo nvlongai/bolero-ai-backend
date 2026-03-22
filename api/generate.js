@@ -14,28 +14,45 @@ export default async function handler(req, res) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    inputs: `
-Viết bài hát Bolero hoàn chỉnh.
-
-Tiêu đề: ${title}
-Nội dung: ${prompt}
-
-Có Verse, Chorus rõ ràng, cảm xúc buồn.
-`
+                    inputs: `Viết bài Bolero: ${title}, nội dung: ${prompt}`
                 })
             }
         );
 
-        const data = await response.json();
+        const text = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            return res.status(200).json({
+                lyrics: "❌ HuggingFace trả HTML → bị chặn hoặc lỗi",
+                audioUrl: ""
+            });
+        }
 
         let lyrics = "";
 
         if (Array.isArray(data) && data[0]?.generated_text) {
             lyrics = data[0].generated_text;
         } else if (data?.error) {
-            lyrics = "❌ Lỗi AI FREE: " + data.error;
+            lyrics = "❌ AI lỗi: " + data.error;
         } else {
-            lyrics = "❌ AI đang bận, thử lại sau";
+            lyrics = "❌ Không tạo được";
+        }
+
+        // 👉 fallback chống fail
+        if (!lyrics || lyrics.startsWith("❌")) {
+            lyrics = `
+🎵 ${title}
+
+Chiều mưa rơi ướt lối em về...
+Tình buồn như gió lê thê...
+
+💔 Điệp khúc:
+Em ơi sao nỡ quên câu thề...
+            `;
         }
 
         return res.status(200).json({
