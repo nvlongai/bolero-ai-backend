@@ -25,10 +25,41 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: "user",
-                        content: `Viết bài hát Bolero cực xúc động.
-Tiêu đề: ${title}
-Nội dung: ${prompt}
-Có đoạn điệp khúc rõ ràng.`
+                        content: `
+Hãy sáng tác một bài hát Bolero Việt Nam hoàn chỉnh.
+
+Yêu cầu:
+- Tiêu đề: ${title}
+- Nội dung: ${prompt}
+- Phong cách: Bolero trữ tình, giống nhạc vàng xưa như: Chế Linh, Mạnh Quỳnh, Trường Vũ, Ngọc Sơn,..
+- Giọng nam, cảm xúc sâu lắng, truyền cảm,...
+
+Cấu trúc bắt buộc:
+[Verse 1]
+(4 câu)
+
+[Verse 2]
+(4 câu)
+
+[Chorus]
+(4-6 câu, cao trào, dễ nhớ)
+
+[Verse 3]
+(4 câu)
+
+[Bridge]
+(2-4 câu)
+
+[Chorus - lặp lại mạnh hơn]
+
+[Kết]
+(2 câu, kết buồn hoặc dang dở)
+
+Yêu cầu thêm:
+- Lời phải mượt, có vần
+- Có hình ảnh: mưa, kỷ niệm, chia ly
+- Không viết giải thích, chỉ viết lời bài hát`
+- Điệp khúc phải dễ thuộc, dễ lan truyền`
                     }
                 ]
             })
