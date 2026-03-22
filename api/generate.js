@@ -1,57 +1,37 @@
 export default async function handler(req, res) {
-    // CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.method === "OPTIONS") {
-        return res.status(200).end();
-    }
+    const body = req.body || {};
+    const title = body.title || "Bài Bolero";
+    const prompt = body.prompt || "tình yêu buồn";
 
     try {
-        const body = req.body || {};
-        const title = body.title || "Bài Bolero";
-        const prompt = body.prompt || "tình yêu buồn";
+        // 🎵 AI FREE (giả lập thông minh)
+        const lyrics = `
+🎵 ${title}
 
-        // 👉 Kiểm tra API KEY
-        if (!process.env.OPENAI_API_KEY) {
-            return res.status(200).json({
-                lyrics: "❌ Chưa cấu hình API KEY trên Vercel",
-                audioUrl: ""
-            });
-        }
+[Verse 1]
+Chiều mưa rơi ướt lối em về
+Anh đứng đó nghe lòng tái tê
+Tình xưa như gió bay xa
+Còn đâu những tháng ngày qua...
 
-        // 👉 Gọi OpenAI
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + process.env.OPENAI_API_KEY
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    {
-                        role: "user",
-                        content: `Viết bài Bolero hoàn chỉnh. Tiêu đề: ${title}. Nội dung: ${prompt}`
-                    }
-                ]
-            })
-        });
+[Verse 2]
+Con đường cũ vẫn còn in dấu
+Mà giờ đây chỉ mình anh đau
+Kỷ niệm xưa đã phai màu
+Chỉ còn nỗi nhớ nghẹn ngào...
 
-        const data = await response.json();
+💔 [Chorus]
+Em ơi sao nỡ quên câu thề
+Để anh ôm trọn nỗi ê chề
+Tình yêu như giấc mộng mê
+Tan rồi chỉ còn u mê...
 
-        // 👉 Nếu OpenAI lỗi
-        if (data.error) {
-            return res.status(200).json({
-                lyrics: "❌ Lỗi OpenAI: " + data.error.message,
-                audioUrl: ""
-            });
-        }
-
-        const lyrics =
-            data?.choices?.[0]?.message?.content ||
-            "Không tạo được lời";
+[Kết]
+Mưa rơi lạnh ướt vai gầy
+Mất em anh biết về đâu...
+        `;
 
         return res.status(200).json({
             lyrics,
@@ -60,7 +40,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         return res.status(200).json({
-            lyrics: "❌ Server crash: " + error.toString(),
+            lyrics: "Lỗi AI FREE",
             audioUrl: ""
         });
     }
